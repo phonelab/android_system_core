@@ -732,7 +732,7 @@ char *android_log_formatLogLine (
     ptm = localtime(&(entry->tv_sec));
 #endif
     //strftime(timeBuf, sizeof(timeBuf), "%Y-%m-%d %H:%M:%S", ptm);
-    strftime(timeBuf, sizeof(timeBuf), "%m-%d %H:%M:%S", ptm);
+    strftime(timeBuf, sizeof(timeBuf), "%Y-%m-%d %H:%M:%S", ptm);
 
     /*
      * Construct a buffer containing the log header and log message.
@@ -772,7 +772,7 @@ char *android_log_formatLogLine (
             break;
         case FORMAT_THREADTIME:
             prefixLen = snprintf(prefixBuf, sizeof(prefixBuf),
-                "%s.%03ld %5d %5d %c %-8s: ", timeBuf, entry->tv_nsec / 1000000,
+                "%s.%lu %5d %5d %c %-8s: ", timeBuf, entry->tv_nsec,
                 entry->pid, entry->tid, priChar, entry->tag);
             strcpy(suffixBuf, "\n");
             suffixLen = 1;

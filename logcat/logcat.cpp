@@ -90,6 +90,7 @@ namespace android {
 /* Global Variables */
 
 static const char * g_outputFileName = NULL;
+static int g_outputFileNumber = 0;
 static int g_logRotateSizeKBytes = 0;                   // 0 means "no log rotation"
 static int g_maxRotatedLogs = DEFAULT_MAX_ROTATED_LOGS; // 0 means "unbounded"
 static int g_outFD = -1;
@@ -115,28 +116,15 @@ static void rotateLogs()
 
     close(g_outFD);
 
-    for (int i = g_maxRotatedLogs ; i > 0 ; i--) {
-        char *file0, *file1;
+    g_outputFileNumber = (g_outputFileNumber + 1) % g_maxRotatedLogs;
 
-        asprintf(&file1, "%s.%d", g_outputFileName, i);
+    char * file0;
 
-        if (i - 1 == 0) {
-            asprintf(&file0, "%s", g_outputFileName);
-        } else {
-            asprintf(&file0, "%s.%d", g_outputFileName, i - 1);
-        }
+    asprintf(&file0, "%s.%d", g_outputFileName, g_outputFileNumber);
 
-        err = rename (file0, file1);
+    remove (file0);
 
-        if (err < 0 && errno != ENOENT) {
-            perror("while rotating log files");
-        }
-
-        free(file1);
-        free(file0);
-    }
-
-    g_outFD = openLogFile (g_outputFileName);
+    g_outFD = openLogFile (file0);
 
     if (g_outFD < 0) {
         perror ("couldn't open output file");
@@ -145,6 +133,7 @@ static void rotateLogs()
 
     g_outByteCount = 0;
 
+    free(file0);
 }
 
 void printBinary(struct logger_entry *buf)
@@ -377,8 +366,13 @@ static void setupOutput()
 
     } else {
         struct stat statbuf;
+        char *file0;
+        
+        asprintf(&file0, "%s.%d", g_outputFileName, g_outputFileNumber);
 
-        g_outFD = openLogFile (g_outputFileName);
+        remove(file0);
+
+        g_outFD = openLogFile (file0);
 
         if (g_outFD < 0) {
             perror ("couldn't open output file");
@@ -388,6 +382,8 @@ static void setupOutput()
         fstat(g_outFD, &statbuf);
 
         g_outByteCount = statbuf.st_size;
+        
+        free(file0);
     }
 }
 
