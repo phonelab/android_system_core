@@ -54,14 +54,14 @@ struct logger_entry_v2 {
  * more than this amount to /dev/log/* will result in a
  * truncated log entry.
  */
-#define LOGGER_ENTRY_MAX_PAYLOAD	4076
+#define LOGGER_ENTRY_MAX_PAYLOAD	65516
 
 /*
  * The maximum size of a log entry which can be read from the
  * kernel logger driver. An attempt to read less than this amount
  * may result in read() returning EINVAL.
  */
-#define LOGGER_ENTRY_MAX_LEN		(5*1024)
+#define LOGGER_ENTRY_MAX_LEN		(65*1024)
 
 #ifdef HAVE_IOCTL
 
