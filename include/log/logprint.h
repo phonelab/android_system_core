@@ -35,6 +35,7 @@ typedef enum {
     FORMAT_RAW,
     FORMAT_TIME,
     FORMAT_THREADTIME,
+    FORMAT_THREADTIMELID,
     FORMAT_LONG,
 } AndroidLogPrintFormat;
 
@@ -43,6 +44,7 @@ typedef struct AndroidLogFormat_t AndroidLogFormat;
 typedef struct AndroidLogEntry_t {
     time_t tv_sec;
     long tv_nsec;
+    uint64_t lid;
     android_LogPriority priority;
     int32_t pid;
     int32_t tid;

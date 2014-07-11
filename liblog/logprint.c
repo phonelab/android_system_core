@@ -17,6 +17,10 @@
 
 #define _GNU_SOURCE /* for asprintf */
 
+/* for printing uint64_t */
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+
 #include <ctype.h>
 #include <stdio.h>
 #include <errno.h>
@@ -216,6 +220,7 @@ AndroidLogPrintFormat android_log_formatFromString(const char * formatString)
     else if (strcmp(formatString, "raw") == 0) format = FORMAT_RAW;
     else if (strcmp(formatString, "time") == 0) format = FORMAT_TIME;
     else if (strcmp(formatString, "threadtime") == 0) format = FORMAT_THREADTIME;
+    else if (strcmp(formatString, "threadtimelid") == 0) format = FORMAT_THREADTIMELID;
     else if (strcmp(formatString, "long") == 0) format = FORMAT_LONG;
     else format = FORMAT_OFF;
 
@@ -352,6 +357,7 @@ int android_log_processLogBuffer(struct logger_entry *buf,
 {
     entry->tv_sec = buf->sec;
     entry->tv_nsec = buf->nsec;
+    entry->lid = buf->lid;
     entry->pid = buf->pid;
     entry->tid = buf->tid;
 
@@ -710,7 +716,7 @@ char *android_log_formatLogLine (
     struct tm* ptm;
     char timeBuf[32];
     char headerBuf[128];
-    char prefixBuf[128], suffixBuf[128];
+    char prefixBuf[256], suffixBuf[128];
     char priChar;
     int prefixSuffixIsHeaderFooter = 0;
     char * ret = NULL;
@@ -731,7 +737,6 @@ char *android_log_formatLogLine (
 #else
     ptm = localtime(&(entry->tv_sec));
 #endif
-    //strftime(timeBuf, sizeof(timeBuf), "%Y-%m-%d %H:%M:%S", ptm);
     strftime(timeBuf, sizeof(timeBuf), "%Y-%m-%d %H:%M:%S", ptm);
 
     /*
@@ -774,6 +779,13 @@ char *android_log_formatLogLine (
             prefixLen = snprintf(prefixBuf, sizeof(prefixBuf),
                 "%s.%lu %5d %5d %c %-8s: ", timeBuf, entry->tv_nsec,
                 entry->pid, entry->tid, priChar, entry->tag);
+            strcpy(suffixBuf, "\n");
+            suffixLen = 1;
+            break;
+        case FORMAT_THREADTIMELID :
+            prefixLen = snprintf(prefixBuf, sizeof(prefixBuf),
+                    "%20"PRIu64" %s.%lu %5d %5d %c %-8s: ", entry->lid, timeBuf, entry->tv_nsec,
+                    entry->pid, entry->tid, priChar, entry->tag);
             strcpy(suffixBuf, "\n");
             suffixLen = 1;
             break;

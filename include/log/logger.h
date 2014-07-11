@@ -24,6 +24,7 @@ struct logger_entry {
     int32_t     tid;    /* generating process's tid */
     int32_t     sec;    /* seconds since Epoch */
     int32_t     nsec;   /* nanoseconds */
+    uint64_t    lid;       /* logline id */
     char        msg[0]; /* the entry's payload */
 };
 
@@ -39,6 +40,7 @@ struct logger_entry_v2 {
     int32_t     tid;       /* generating process's tid */
     int32_t     sec;       /* seconds since Epoch */
     int32_t     nsec;      /* nanoseconds */
+    uint64_t    lid;       /* logline id */
     uint32_t    euid;      /* effective UID of logger */
     char        msg[0];    /* the entry's payload */
 };
