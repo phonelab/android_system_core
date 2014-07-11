@@ -784,7 +784,7 @@ char *android_log_formatLogLine (
             break;
         case FORMAT_THREADTIMELID :
             prefixLen = snprintf(prefixBuf, sizeof(prefixBuf),
-                    "%20"PRIu64" %s.%lu %5d %5d %c %-8s: ", entry->lid, timeBuf, entry->tv_nsec,
+                    "%"PRIu64" %s.%lu %5d %5d %c %-8s: ", entry->lid, timeBuf, entry->tv_nsec,
                     entry->pid, entry->tid, priChar, entry->tag);
             strcpy(suffixBuf, "\n");
             suffixLen = 1;
