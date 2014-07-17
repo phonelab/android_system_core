@@ -61,17 +61,18 @@ show_param() {
     fprintf(stderr, "===========================================================\n");
     fprintf(stderr, "Log interval:                %lu usec.\n", g_interval_usec);
     fprintf(stderr, "Log message size:            %d bytes.\n", g_msg_size);
-    fprintf(stderr, "Rotation count:              %d.\n", g_rotate_count);
-    fprintf(stderr, "Roation size:                %d KB.\n", g_rotate_size_kb);
-    fprintf(stderr, "Log format:                  %s.\n", g_log_format);
-    fprintf(stderr, "Log file:                    %s.\n", g_log_file);
+
     if (g_monitor) {
         fprintf(stderr, "Monitor:                     %d.\n", g_monitor);
+        fprintf(stderr, "Rotation count:              %d.\n", g_rotate_count);
+        fprintf(stderr, "Roation size:                %d KB.\n", g_rotate_size_kb);
+        fprintf(stderr, "Log format:                  %s.\n", g_log_format);
+        fprintf(stderr, "Log file:                    %s.\n", g_log_file);
+        fprintf(stderr, "Abort lines:                 %d.\n", g_abort_lines);
     }
     else {
         fprintf(stderr, "Test duration:               %d sec.\n", g_duration_sec);
     }
-    fprintf(stderr, "Abort lines:                 %d.\n", g_abort_lines);
     fprintf(stderr, "Buffer:                      %s.\n", g_buffer);
     fprintf(stderr, "===========================================================\n");
 }
