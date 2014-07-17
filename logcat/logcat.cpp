@@ -1,5 +1,9 @@
 // Copyright 2006 The Android Open Source Project
 
+/* for printing uint64_t */
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+
 #include <log/logger.h>
 #include <log/logd.h>
 #include <log/logprint.h>
@@ -26,6 +30,11 @@
 static AndroidLogFormat * g_logformat;
 static bool g_nonblock = false;
 static int g_tail_lines = 0;
+
+
+/* set default value incrediably large so we unlikely to abort */
+static unsigned long g_abort_on_loss = ULONG_MAX;
+static uint64_t previous_lid = 0;
 
 /* logd prefixes records with a length field */
 #define RECORD_LENGTH_FIELD_SIZE_BYTES sizeof(uint32_t)
@@ -191,6 +200,15 @@ static void processBuffer(log_device_t* dev, struct logger_entry *buf)
     ) {
         rotateLogs();
     }
+
+    if (previous_lid > 0 && (entry.lid > previous_lid)) {
+        unsigned long missed_lines = (unsigned long) (entry.lid - previous_lid);
+        if (missed_lines > g_abort_on_loss) {
+            fprintf(stderr, "Logline miss detected, %"PRIu64" -> %"PRIu64", %lu loglines missed.\n", previous_lid, entry.lid, missed_lines);
+            exit(-1);
+        }
+    }
+    previous_lid = entry.lid;
 
 error:
     //fprintf (stderr, "Error processing record\n");
@@ -406,7 +424,9 @@ static void show_help(const char *cmd)
                     "  -b <buffer>     Request alternate ring buffer, 'main', 'system', 'radio'\n"
                     "                  or 'events'. Multiple -b parameters are allowed and the\n"
                     "                  results are interleaved. The default is -b main -b system.\n"
-                    "  -B              output the log in binary");
+                    "  -B              output the log in binary"
+                    "  -a              Set threshold of missed log lines that will cause logcat to abort.\n"
+                    );
 
 
     fprintf(stderr,"\nfilterspecs are a series of \n"
@@ -477,7 +497,7 @@ int main(int argc, char **argv)
     for (;;) {
         int ret;
 
-        ret = getopt(argc, argv, "cdt:gsQf:r::n:v:b:B");
+        ret = getopt(argc, argv, "cdt:gsQf:r:n:v:b:Ba:");
 
         if (ret < 0) {
             break;
@@ -643,6 +663,14 @@ int main(int argc, char **argv)
                             }
                         }
                     }
+                }
+                break;
+
+            case 'a':
+                g_abort_on_loss = (unsigned long) strtol(optarg, NULL, 10);
+                if (g_abort_on_loss == (unsigned long) 0) {
+                    fprintf(stderr, "Invalid abort threshold: %s\n", optarg);
+                    exit(-1);
                 }
                 break;
 
