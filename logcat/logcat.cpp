@@ -34,7 +34,6 @@ static int g_tail_lines = 0;
 
 /* set default value incrediably large so we unlikely to abort */
 static unsigned long g_abort_on_loss = ULONG_MAX;
-static uint64_t previous_lid = 0;
 
 /* logd prefixes records with a length field */
 #define RECORD_LENGTH_FIELD_SIZE_BYTES sizeof(uint32_t)
@@ -67,6 +66,7 @@ struct log_device_t {
     int fd;
     bool printed;
     char label;
+    uint64_t previous_lid;
 
     queued_entry_t* queue;
     log_device_t* next;
@@ -78,6 +78,7 @@ struct log_device_t {
         queue = NULL;
         next = NULL;
         printed = false;
+        previous_lid = 0;
     }
 
     void enqueue(queued_entry_t* entry) {
@@ -201,14 +202,14 @@ static void processBuffer(log_device_t* dev, struct logger_entry *buf)
         rotateLogs();
     }
 
-    if (previous_lid > 0 && (entry.lid > previous_lid)) {
-        unsigned long missed_lines = (unsigned long) (entry.lid - previous_lid);
+    if (dev->previous_lid > 0) {
+        unsigned long missed_lines = (unsigned long) (entry.lid - dev->previous_lid);
         if (missed_lines > g_abort_on_loss) {
-            fprintf(stderr, "Logline miss detected, %"PRIu64" -> %"PRIu64", %lu loglines missed.\n", previous_lid, entry.lid, missed_lines);
+            fprintf(stderr, "Logline miss detected, %"PRIu64" -> %"PRIu64", %lu loglines missed.\n", dev->previous_lid, entry.lid, missed_lines);
             exit(-1);
         }
     }
-    previous_lid = entry.lid;
+    dev->previous_lid = entry.lid;
 
 error:
     //fprintf (stderr, "Error processing record\n");
