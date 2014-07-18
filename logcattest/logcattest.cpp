@@ -15,25 +15,32 @@
 #include <sys/stat.h>
 #include <signal.h>
 
+/**
+ * logcat stress test.
+ *
+ * To see the maximum rate of writing logs before logcat missing log lines.
+ */
 
-#define TAG "LogcatTest"
-#define LOG_DIR "/sdcard/logcattest"
-#define LOG_FILE "logcat.log"
 
-useconds_t g_interval_usec = 1000L;
-int g_msg_size = 1024;
-log_id_t g_log_id = LOG_ID_SYSTEM;
+#define TAG                             "LogcatTest"
+#define LOG_DIR                         "/sdcard/logcattest"
+#define LOG_FILE                        "logcat.log"
+
 android_LogPriority g_prio = ANDROID_LOG_VERBOSE;
 
+/* command line options */
+static useconds_t g_interval_usec = 1000L;
 static char* msg = NULL;
-static char* g_log_format = "threadtimelid";
+static char* g_log_format = (char*) "threadtimelid";
+static int g_msg_size = 1024;
 static int g_rotate_size_kb = 1024;
 static int g_rotate_count = 100;
 static char g_log_file[128];
 static bool g_monitor = false;
 static int g_duration_sec = 60;
-static int g_abort_lines = 1024;
-static char* g_buffer = "system";
+static int g_abort_lines = 1;
+static char* g_buffer = (char*) "system";
+static log_id_t g_log_id = LOG_ID_SYSTEM;
 
 
 static void
@@ -190,6 +197,7 @@ main(int argc, char **argv) {
 
     char cmd[128];
 
+    /* clear buffer */
     sprintf(cmd, "logcat -c -b %s", g_buffer);
     fprintf(stderr, "%s\n", cmd);
     system(cmd);
