@@ -57,9 +57,14 @@ read_kmsgs(int fd) {
             buf = line_buf;
             len = MAX_LINE_WIDTH;
             if ((ret = getline(&buf, &len, fp)) != -1) {
+                /* fix ^M at line end */
+                if (buf[ret-2] == 0xD) {
+                    buf[ret-2] = '\n';
+                    buf[ret-1] = '\0';
+                }
                 __android_log_buf_write(g_log_id, g_prio, TAG, buf);
             }
-            if (len > MAX_LINE_WIDTH) {
+            if (buf != line_buf) {
                 free(buf);
             }
         }
